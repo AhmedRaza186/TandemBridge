@@ -103,8 +103,12 @@ type `/setup` instead. The setup is an interview, in your own language:
    agents you pick, after asking.
 3. It asks where you want alerts: phone push (ntfy), Telegram, WhatsApp, or email.
 4. It asks how much of your plan a project may use, and what the manager may decide alone.
-5. It writes `bridge.profile.json`, `.env` (without secrets: you paste those yourself), and the
-   manager's `AGENTS.md`, then runs the tests.
+5. It writes `bridge.profile.json`, your settings in `.env`, and the manager's `AGENTS.md`, then
+   runs the tests.
+6. For each password or token an alert channel needs, it gives you one command to run in your own
+   terminal, for example `npm run bridge -- set-key SMTP_APP_PASSWORD`. You paste the value there,
+   it shows only `*`, and it goes straight into `.env`. The agent never sees it, and you never
+   edit `.env` by hand.
 
 Nothing it writes is committed: your choices and secrets stay on your computer.
 
@@ -251,6 +255,8 @@ off. Alerts arrive in the language you chose during setup, on every channel you 
 | WhatsApp via CallMeBot | Free | Your own number only; an unofficial third-party service |
 | WhatsApp Cloud API | Paid by Meta | Needs a Meta app, a number, and an approved template |
 
+Secrets go in with `npm run bridge -- set-key <NAME>`, typed hidden in your own terminal;
+`npm run bridge -- keys` shows which settings are filled in, without showing any value.
 `npm run bridge -- notify-test` sends a test to every channel that is on.
 
 | Alert says | What to do |
@@ -274,6 +280,8 @@ All commands are `npm run bridge -- <command>`:
 | `status [workflow]` | Every workflow, its steps, usage, and anything waiting for you |
 | `watch [workspace]` | Follow the running step live in this terminal |
 | `limits` | How much of the Claude plan is left (one tiny Haiku call) |
+| `set-key <NAME> [value]` | Put a setting in `.env`. A secret is typed hidden, in your own terminal |
+| `keys` | Which settings in `.env` have a value (never shows the values) |
 | `plan <workspace> "<idea>"` | Codex writes a spec into `data/specs/` |
 | `start <spec.json> [--workspace D] [--reference name]` | Start a workflow from a spec |
 | `answer <task id> "<text>"` | Answer a step that is waiting for you |
@@ -317,7 +325,7 @@ See [docs/architecture.md](docs/architecture.md) for more on the code, and
 
 | File | Purpose | Committed |
 |---|---|---|
-| `.env` | Alert settings and secrets (see [.env.example](.env.example)) | No |
+| `.env` | Alert settings and secrets (see [.env.example](.env.example)). Filled in with `set-key` | No |
 | `bridge.profile.json` | Team roles, usage level, alert language and translations | No |
 | `AGENTS.md` | The manager's instructions, generated from `templates/` | No |
 

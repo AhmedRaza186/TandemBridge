@@ -24,6 +24,8 @@ const USAGE = `TandemBridge
   status [workflow]                   show workflows and steps
   watch [workspace]                   follow the running step live in this terminal
   limits                              check how much of the Claude plan is left (one tiny Haiku call)
+  set-key <NAME> [value]              put a setting in .env; secrets are typed hidden, in your own terminal
+  keys                                which settings in .env have a value (values are never shown)
   answer <task id> "<text>"           answer a blocked agent
   resume <workflow> [--budget N]      continue a paused workflow
   retry <workflow> ["<note>"]         run a failed workflow's failed steps again, keeping their files
@@ -174,6 +176,41 @@ const commands = {
     if (!args[0]) throw new Error('usage: cancel <workflow>');
     await withDb((db) => cancelWorkflow(db, args[0]));
     console.log('Cancelled. Files and commits stay on the branch.');
+  },
+
+  // Puts one value into .env. A secret is typed hidden, here in the owner's own terminal, never as
+  // an argument, so it stays out of shell history and out of any AI agent's view.
+  async 'set-key'(args) {
+    const envFile = require('../config/env-file');
+    const [key, ...rest] = args;
+    if (!key) throw new Error('usage: set-key <NAME> [value]   (secrets: set-key <NAME>, then type it hidden)');
+    const name = key.toUpperCase();
+    let value;
+    if (envFile.isSecret(name)) {
+      if (rest.length) throw new Error(`${name} is a secret. Do not put it in the command: run "npm run bridge -- set-key ${name}" and type it when asked.`);
+      value = await envFile.readHidden(`Paste or type ${name} (hidden), then Enter: `);
+      if (!value) throw new Error('Nothing was typed. Nothing was saved.');
+    } else {
+      value = rest.join(' ');
+      if (!rest.length) value = await new Promise((resolve) => {
+        const rl = require('readline').createInterface({ input: process.stdin, output: process.stdout });
+        rl.question(`${name} = `, (a) => { rl.close(); resolve(a.trim()); });
+      });
+    }
+    const known = envFile.listKeys().some((k) => k.key === name);
+    envFile.setKey(name, value);
+    console.log(envFile.isSecret(name) ? `Saved ${name} in .env.` : `Saved ${name}=${value} in .env.`);
+    if (!known) console.log(`Note: ${name} is not one of TandemBridge's settings (see .env.example). Check the spelling.`);
+  },
+
+  // Which settings in .env have a value. No value is ever shown.
+  async keys() {
+    const envFile = require('../config/env-file');
+    for (const k of envFile.listKeys()) {
+      const state = k.set ? 'set' : '-';
+      console.log(`${k.key.padEnd(30)} ${state}`);
+    }
+    console.log('\nChange one with: npm run bridge -- set-key <NAME>');
   },
 
   async 'notify-test'() {

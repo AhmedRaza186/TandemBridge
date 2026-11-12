@@ -13,8 +13,9 @@ Rules for the whole interview:
   and for your final message.
 - Ask in small groups, with a recommended option first. Use your question tool if you have one,
   otherwise ask in chat with numbered options. Every question also accepts a free-text answer.
-- **Never ask for a password, token, or API key in chat.** Secrets go straight into `.env`, by the
-  owner's own hand.
+- **Never ask for a password, token, or API key in chat.** The owner types each secret into their
+  own terminal with `npm run bridge -- set-key <NAME>`, which hides it as they type and saves it in
+  `.env`. Never run that command for a secret yourself, and never open or print `.env`.
 - If `bridge.profile.json` or `AGENTS.md` already exists, show what is there and ask before
   replacing it. Never overwrite an existing `.env`; only add missing keys to it.
 
@@ -138,8 +139,11 @@ If the language is not English, run `npm run bridge -- messages` and put a trans
 entry in `messages`, in the same keys. Keep `{placeholders}`, `npm run` commands, and the literal
 phrases "fix them" and "accept as is" exactly as they are.
 
-**`.env`:** copy `.env.example` if there is no `.env`. Fill in the channels and addresses. Leave
-every secret empty.
+**`.env`:** never edit it by hand and never ask the owner to. Put each setting that is not a secret
+in with `npm run bridge -- set-key <NAME> <value>`, for example
+`npm run bridge -- set-key CHANNEL_NTFY on` or `npm run bridge -- set-key EMAIL_TO them@example.com`.
+The first one creates `.env` from `.env.example`. Leave every secret for the owner (see section 4).
+`npm run bridge -- keys` shows which settings have a value, without showing any value.
 
 **`AGENTS.md`:** copy `templates/AGENTS.template.md` and replace:
 
@@ -169,12 +173,22 @@ The `plan` command uses Codex. Without Codex the manager plans by itself: it run
 ## 4. Verify
 
 - Run `npm test` and report any failure.
-- If any alert channel is on, tell the owner exactly which keys to paste into `.env` and how to get
-  them. For Telegram: create a bot with @BotFather, paste its token, message the bot once, then run
-  `npm run bridge -- telegram-chat-id` and put the result in `TELEGRAM_CHAT_ID`. For CallMeBot,
-  send them to the current WhatsApp instructions on callmebot.com, because its bot number changes.
-  Wait until they say it is done, then run `npm run bridge -- notify-test`, and ask them to confirm
-  the message arrived on their phone.
+- If any alert channel needs a secret, tell the owner how to get it, then give them the exact
+  command to type in **their own terminal** (not yours: a secret can only be typed where they can
+  see the prompt), one per secret, for example:
+
+  ```text
+  npm run bridge -- set-key SMTP_APP_PASSWORD
+  ```
+
+  It asks for the value, shows only `*` while they paste it, and saves it in `.env`. The secrets
+  are `SMTP_APP_PASSWORD` (Gmail App Password), `TELEGRAM_BOT_TOKEN` (from @BotFather),
+  `CALLMEBOT_APIKEY` (from callmebot.com, whose current WhatsApp instructions you should send them
+  to, because its bot number changes), `WHATSAPP_TOKEN`, and `NTFY_TOKEN` (only for a reserved
+  topic or their own server). For Telegram, after the token: they message the bot once, you run
+  `npm run bridge -- telegram-chat-id` and save the result with `set-key TELEGRAM_CHAT_ID <id>`.
+- Wait until they say it is done, check with `npm run bridge -- keys`, then run
+  `npm run bridge -- notify-test` and ask them to confirm the message arrived on their phone.
 
 ## 5. Finish
 
