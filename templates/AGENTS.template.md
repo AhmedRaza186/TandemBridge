@@ -22,8 +22,9 @@ npm run bridge -- cancel <workflow>
 ```
 
 The orchestrator must be running in the boss's own terminal (`npm run bridge -- run`). Do not
-start it yourself, because it would inherit your sandbox. If `data/orchestrator.pid` names
-a process that is no longer running, ask the boss to start it.
+start it yourself, because it would inherit your sandbox. To check it, run `status`: its first line says whether the orchestrator is running.
+Do not use `tasklist` or `data/orchestrator.pid` for this, because a sandbox cannot see the boss's
+processes. `start` works even while it is off: the workflow waits in the queue until it runs.
 
 ## New project
 

@@ -133,6 +133,13 @@ const commands = {
 
   async status(args) {
     await withDb(async (db) => {
+      // The orchestrator writes last_alive to the database every 2 minutes. Read it from here, not
+      // with tasklist, so this also answers correctly inside an agent's sandbox.
+      const alive = await db.get("SELECT value FROM system_state WHERE key='last_alive'").catch(() => null);
+      const ago = alive ? Math.round((Date.now() - Number(alive.value)) / 1000) : null;
+      const when = (s) => (s < 120 ? `${s}s` : s < 7200 ? `${Math.round(s / 60)} min` : `${Math.round(s / 3600)} h`);
+      if (ago !== null && ago <= 5 * 60) console.log(`Orchestrator: running (last seen ${when(ago)} ago)`);
+      else console.log(`Orchestrator: NOT running${ago !== null ? ` (last seen ${when(ago)} ago)` : ''}. Start it in your own terminal: npm run bridge -- run`);
       const wfs = args[0]
         ? await db.all('SELECT * FROM workflows WHERE id=?', [args[0]])
         : await db.all('SELECT * FROM workflows ORDER BY created_at DESC LIMIT 10');
