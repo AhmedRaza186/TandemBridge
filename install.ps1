@@ -107,15 +107,24 @@ function Install-TandemBridge {
   # The folder chooser of Windows, kept on top of the terminal. $null if nothing was picked.
   function Browse-Folder {
     try {
-      Add-Type -AssemblyName System.Windows.Forms
+      Add-Type -AssemblyName System.Windows.Forms, System.Drawing
+      # Windows keeps a new window from another program behind the terminal. An invisible window
+      # that is shown, on top, and active owns the folder window, which then opens above everything.
       $owner = New-Object System.Windows.Forms.Form
       $owner.TopMost = $true
       $owner.ShowInTaskbar = $false
+      $owner.FormBorderStyle = 'None'
+      $owner.Opacity = 0
+      $owner.StartPosition = 'CenterScreen'
+      $owner.Size = New-Object System.Drawing.Size(1, 1)
+      $owner.Show()
+      $owner.Activate()
       $dialog = New-Object System.Windows.Forms.FolderBrowserDialog
       $dialog.Description = 'Choose where to put the TandemBridge folder'
       $dialog.ShowNewFolderButton = $true
-      Say 'A folder window has opened. Choose a folder there.' DarkGray
+      Say 'A folder window has opened (if you cannot see it, press Alt+Tab).' DarkGray
       $result = $dialog.ShowDialog($owner)
+      $owner.Close()
       $owner.Dispose()
       if ($result -eq [System.Windows.Forms.DialogResult]::OK) { return $dialog.SelectedPath }
     } catch { Say 'The folder window could not open here. Type the path instead.' Yellow }
