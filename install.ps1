@@ -3,7 +3,7 @@
 #   irm https://raw.githubusercontent.com/AhmedRaza186/TandemBridge/main/install.ps1 | iex
 #
 # Read it first: it checks for Node.js 22+ and git (and offers to install them with winget),
-# asks which drive or folder to put TandemBridge in (a list, a folder window, or a typed path),
+# asks which drive or folder to put TandemBridge in (a list, browsing the folders, or a typed path),
 # downloads it there, installs its packages, and runs its tests.
 # Run it again to update: it pulls the latest code into the same folder and never touches .env,
 # your profile, or data\.
@@ -104,34 +104,43 @@ function Install-TandemBridge {
     }
   }
 
-  # The folder chooser of Windows, kept on top of the terminal. $null if nothing was picked.
+  # Walks the folders inside the terminal: a drive, then folders in and out, then "Install here".
+  # (The Windows folder window opens behind the terminal, so it is not used.) $null on Esc.
   function Browse-Folder {
-    try {
-      Add-Type -AssemblyName System.Windows.Forms, System.Drawing
-      # Windows keeps a new window from another program behind the terminal. An invisible window
-      # that is shown, on top, and active owns the folder window, which then opens above everything.
-      $owner = New-Object System.Windows.Forms.Form
-      $owner.TopMost = $true
-      $owner.ShowInTaskbar = $false
-      $owner.FormBorderStyle = 'None'
-      $owner.Opacity = 0
-      $owner.StartPosition = 'CenterScreen'
-      $owner.Size = New-Object System.Drawing.Size(1, 1)
-      $owner.Show()
-      $owner.Activate()
-      $dialog = New-Object System.Windows.Forms.FolderBrowserDialog
-      $dialog.Description = 'Choose where to put the TandemBridge folder'
-      $dialog.ShowNewFolderButton = $true
-      Say 'A folder window has opened (if you cannot see it, press Alt+Tab).' DarkGray
-      $result = $dialog.ShowDialog($owner)
-      $owner.Close()
-      $owner.Dispose()
-      if ($result -eq [System.Windows.Forms.DialogResult]::OK) { return $dialog.SelectedPath }
-    } catch { Say 'The folder window could not open here. Type the path instead.' Yellow }
-    return $null
+    $dir = $null
+    while ($true) {
+      if (-not $dir) {
+        $roots = @(Get-PSDrive -PSProvider FileSystem | Where-Object { $_.Root -and (Test-Path $_.Root) } | ForEach-Object { $_.Root })
+        Step 'Choose a drive'
+        $pick = Select-Menu $roots 0
+        if ($pick -lt 0) { return $null }
+        $dir = $roots[$pick]
+        continue
+      }
+      # Hidden and system folders ($Recycle.Bin, System Volume Information) are left out.
+      $subs = @(Get-ChildItem -LiteralPath $dir -Directory -Force -ErrorAction SilentlyContinue |
+        Where-Object { -not ($_.Attributes -band [IO.FileAttributes]::Hidden) -and -not ($_.Attributes -band [IO.FileAttributes]::System) } |
+        Sort-Object Name)
+      $height = 30
+      try { $height = [Console]::WindowHeight } catch { }
+      $max = [Math]::Max(5, $height - 12)
+      $items = @("Install here:  $(Join-Path $dir 'TandemBridge')", '.. (up one folder)')
+      $items += @($subs | Select-Object -First $max | ForEach-Object { "$($_.Name)\" })
+      if ($subs.Count -gt $max) { $items += "($($subs.Count - $max) more folders: use Type a path instead)" }
+      Step "Folder: $dir"
+      $pick = Select-Menu $items 0
+      if ($pick -lt 0) { return $null }
+      if ($pick -eq 0) { return $dir }
+      if ($pick -eq 1) {
+        $parent = Split-Path $dir -Parent
+        $dir = if ($parent) { $parent } else { $null }
+        continue
+      }
+      if ($pick - 2 -lt [Math]::Min($subs.Count, $max)) { $dir = $subs[$pick - 2].FullName }
+    }
   }
 
-  # Where to install: a drive from the list, a folder picked in the window, or a typed path.
+  # Where to install: a drive from the list, a folder picked by walking the folders, or a typed path.
   # The choice is remembered (TANDEMBRIDGE_HOME), so running this again updates the same folder.
   function Choose-Home {
     if ($env:TANDEMBRIDGE_HOME) { return $env:TANDEMBRIDGE_HOME }
