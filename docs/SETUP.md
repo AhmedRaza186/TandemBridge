@@ -28,7 +28,9 @@ orchestrator can run, whether it is installed, and how to log in to it.
 ## 2. Interview
 
 **About them:** their name, and the language for alerts and for the manager's replies. Any language
-is allowed.
+is allowed. Ask for the name as a free-text answer with no suggested names. Never take it from this
+repository: the name in `LICENSE`, the README, or the git history is the author of TandemBridge,
+not the person setting it up.
 
 **Who does what.**
 
