@@ -3,7 +3,8 @@
 #   irm https://raw.githubusercontent.com/AhmedRaza186/TandemBridge/main/install.ps1 | iex
 #
 # Read it first: it checks for Node.js 22+ and git (and offers to install them with winget),
-# asks which drive or folder to put TandemBridge in (a list, browsing the folders, or a typed path),
+# asks which drive or folder to put TandemBridge in (a list, a folder window, browsing in the
+# terminal, or a typed path),
 # downloads it there, installs its packages, and runs its tests.
 # Run it again to update: it pulls the latest code into the same folder and never touches .env,
 # your profile, or data\.
@@ -105,7 +106,7 @@ function Install-TandemBridge {
   }
 
   # Walks the folders inside the terminal: a drive, then folders in and out, then "Install here".
-  # (The Windows folder window opens behind the terminal, so it is not used.) $null on Esc.
+  # For when the Windows folder window opens behind the terminal. $null on Esc.
   function Browse-Folder {
     $dir = $null
     while ($true) {
@@ -140,6 +141,33 @@ function Install-TandemBridge {
     }
   }
 
+  # The folder chooser of Windows, kept on top of the terminal. $null if nothing was picked.
+  function Browse-Window {
+    try {
+      Add-Type -AssemblyName System.Windows.Forms, System.Drawing
+      # Windows keeps a new window from another program behind the terminal. An invisible window
+      # that is shown, on top, and active owns the folder window, which then opens above everything.
+      $owner = New-Object System.Windows.Forms.Form
+      $owner.TopMost = $true
+      $owner.ShowInTaskbar = $false
+      $owner.FormBorderStyle = 'None'
+      $owner.Opacity = 0
+      $owner.StartPosition = 'CenterScreen'
+      $owner.Size = New-Object System.Drawing.Size(1, 1)
+      $owner.Show()
+      $owner.Activate()
+      $dialog = New-Object System.Windows.Forms.FolderBrowserDialog
+      $dialog.Description = 'Choose where to put the TandemBridge folder'
+      $dialog.ShowNewFolderButton = $true
+      Say 'A folder window has opened (if you cannot see it, press Alt+Tab).' DarkGray
+      $result = $dialog.ShowDialog($owner)
+      $owner.Close()
+      $owner.Dispose()
+      if ($result -eq [System.Windows.Forms.DialogResult]::OK) { return $dialog.SelectedPath }
+    } catch { Say 'The folder window could not open here. Type the path instead.' Yellow }
+    return $null
+  }
+
   # Where to install: a drive from the list, a folder picked by walking the folders, or a typed path.
   # The choice is remembered (TANDEMBRIDGE_HOME), so running this again updates the same folder.
   function Choose-Home {
@@ -158,7 +186,8 @@ function Install-TandemBridge {
       $free = if ($disk) { '   {0:N0} GB free' -f ($disk.FreeSpace / 1GB) } else { '' }
       $items += "$($paths[$n])$free"
     }
-    $items += 'Browse for a folder...'
+    $items += 'Browse with a window...'
+    $items += 'Browse in this terminal...'
     $items += 'Type a path...'
 
     while ($true) {
@@ -166,8 +195,8 @@ function Install-TandemBridge {
       $pick = Select-Menu $items 0
       if ($pick -lt 0) { return $default }
       if ($pick -lt $paths.Count) { return $paths[$pick] }
-      if ($pick -eq $paths.Count) {
-        $picked = Browse-Folder
+      if ($pick -eq $paths.Count -or $pick -eq $paths.Count + 1) {
+        $picked = if ($pick -eq $paths.Count) { Browse-Window } else { Browse-Folder }
         if ($picked) {
           # A folder that already holds other things gets a TandemBridge folder inside it.
           $target = if ((Split-Path $picked -Leaf) -eq 'TandemBridge') { $picked } else { Join-Path $picked 'TandemBridge' }
