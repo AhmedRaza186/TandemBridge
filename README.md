@@ -60,12 +60,26 @@ everything, it still works.
 
 ## Setup
 
+**One line, in PowerShell:**
+
+```powershell
+irm https://raw.githubusercontent.com/AhmedRaza186/TandemBridge/main/install.ps1 | iex
+```
+
+It checks for Node.js 22+ and git and offers to install them with `winget`, downloads TandemBridge
+into `%USERPROFILE%\TandemBridge`, installs its packages, and runs its tests. Run it again any time
+to update; it never touches your `.env`, profile, or data. As with any script from the internet,
+[read it](install.ps1) before you run it. Set `TANDEMBRIDGE_HOME` first to install somewhere else.
+
+**Or by hand:**
+
 ```powershell
 git clone https://github.com/AhmedRaza186/TandemBridge.git
 cd TandemBridge
+npm install
 ```
 
-Open your agent in this folder and ask it: **"Follow docs/SETUP.md"**. In Claude Code you can
+Then open your agent in that folder and ask it: **"Follow docs/SETUP.md"**. In Claude Code you can
 type `/setup` instead. The setup is an interview, in your own language:
 
 1. It checks Node and git, installs dependencies, and lists which agents are installed.
@@ -262,6 +276,7 @@ All commands are `npm run bridge -- <command>`:
 
 ```text
 TandemBridge/
+├── install.ps1                one-line installer for Windows
 ├── bin/tandembridge.js        command line entry point
 ├── src/
 │   ├── cli/                   the bridge commands
