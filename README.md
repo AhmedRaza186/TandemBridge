@@ -66,10 +66,15 @@ everything, it still works.
 irm https://raw.githubusercontent.com/AhmedRaza186/TandemBridge/main/install.ps1 | iex
 ```
 
-It checks for Node.js 22+ and git and offers to install them with `winget`, downloads TandemBridge
-into `%USERPROFILE%\TandemBridge`, installs its packages, and runs its tests. Run it again any time
-to update; it never touches your `.env`, profile, or data. As with any script from the internet,
-[read it](install.ps1) before you run it. Set `TANDEMBRIDGE_HOME` first to install somewhere else.
+It asks which drive or folder to put TandemBridge in (pick from a list, browse with a folder
+window, or type a path), checks for Node.js 22+ and git and offers to install them with `winget`,
+downloads TandemBridge there, installs its packages, and runs its tests. At the end it lists the
+IDEs and agents it finds (VS Code, Antigravity, Cursor, Claude Code, Codex, Gemini CLI, Copilot CLI)
+and opens the folder in the one you pick, so you can start setup right away.
+
+Run it again any time to update the same folder; it never touches your `.env`, profile, or data.
+As with any script from the internet, [read it](install.ps1) before you run it. Set
+`TANDEMBRIDGE_HOME` first to skip the folder question.
 
 **Or by hand:**
 
