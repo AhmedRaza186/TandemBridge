@@ -1,4 +1,9 @@
-# TandemBridge
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="docs/images/logo-dark.svg">
+    <img src="docs/images/logo-light.svg" alt="TandemBridge" width="460">
+  </picture>
+</p>
 
 **A local orchestrator that turns one project description into a working app, built by a team of
 AI coding agents you already use.**
