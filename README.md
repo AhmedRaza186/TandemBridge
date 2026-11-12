@@ -66,6 +66,12 @@ everything, it still works.
 irm https://raw.githubusercontent.com/AhmedRaza186/TandemBridge/main/install.ps1 | iex
 ```
 
+From Command Prompt (`cmd`) instead:
+
+```cmd
+powershell -ExecutionPolicy Bypass -c "irm https://raw.githubusercontent.com/AhmedRaza186/TandemBridge/main/install.ps1 | iex"
+```
+
 It asks which drive or folder to put TandemBridge in (pick from a list, browse with a folder
 window, or type a path), checks for Node.js 22+ and git and offers to install them with `winget`,
 downloads TandemBridge there, installs its packages, and runs its tests. At the end it lists the
