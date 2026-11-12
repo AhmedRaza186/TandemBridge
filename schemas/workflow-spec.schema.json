@@ -1,0 +1,31 @@
+{
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["title", "goal", "questions", "run_instructions", "ui_reference", "tasks"],
+  "properties": {
+    "ui_reference": { "type": ["string", "null"] },
+    "title": { "type": "string" },
+    "goal": { "type": "string" },
+    "questions": { "type": "array", "items": { "type": "string" } },
+    "run_instructions": { "type": "string" },
+    "tasks": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["seq", "assignee", "kind", "title", "goal", "scope", "depends_on", "acceptance", "verify"],
+        "properties": {
+          "seq": { "type": "integer" },
+          "assignee": { "type": "string", "enum": ["claude", "antigravity", "codex", "copilot", "gemini"] },
+          "kind": { "type": "string", "enum": ["implement", "test", "document", "review"] },
+          "title": { "type": "string" },
+          "goal": { "type": "string" },
+          "scope": { "type": "array", "items": { "type": "string" } },
+          "depends_on": { "type": "array", "items": { "type": "integer" } },
+          "acceptance": { "type": "array", "items": { "type": "string" } },
+          "verify": { "type": "array", "items": { "type": "string" } }
+        }
+      }
+    }
+  }
+}

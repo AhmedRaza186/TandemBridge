@@ -1,0 +1,27 @@
+{
+  "name": "tandembridge",
+  "version": "1.0.0",
+  "description": "A local orchestrator that runs a team of AI coding agents to build, test, and review complete apps.",
+  "main": "src/index.js",
+  "scripts": {
+    "test": "node --test test/*.test.js",
+    "bridge": "node bin/tandembridge.js",
+    "migrate": "node src/db/migrate.js"
+  },
+  "keywords": ["ai-agents", "orchestrator", "claude-code", "antigravity", "codex", "gemini-cli", "copilot"],
+  "author": "Ahmed Raza (https://github.com/AhmedRaza186)",
+  "repository": { "type": "git", "url": "git+https://github.com/AhmedRaza186/TandemBridge.git" },
+  "homepage": "https://github.com/AhmedRaza186/TandemBridge#readme",
+  "license": "MIT",
+  "dependencies": {
+    "nodemailer": "^10.3.1",
+    "sqlite3": "^6.0.1"
+  },
+  "private": true,
+  "bin": {
+    "tandembridge": "bin/tandembridge.js"
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}

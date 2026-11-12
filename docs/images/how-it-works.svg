@@ -1,0 +1,77 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="430" viewBox="0 0 960 430" font-family="Segoe UI, system-ui, -apple-system, Helvetica, Arial, sans-serif">
+  <defs>
+    <marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0 0L10 5L0 10z" fill="#8a857b"/>
+    </marker>
+  </defs>
+  <rect width="960" height="430" rx="14" fill="#f7f6f2"/>
+  <text x="32" y="44" font-size="20" font-weight="700" fill="#1c1b19">How TandemBridge works</text>
+  <text x="32" y="68" font-size="13" fill="#66625a">You describe the app once. The orchestrator hands each step to an agent, checks it, and commits it.</text>
+
+  <!-- You -->
+  <rect x="32" y="110" width="150" height="74" rx="10" fill="#ffffff" stroke="#e0ddd5"/>
+  <text x="107" y="142" font-size="15" font-weight="700" fill="#1c1b19" text-anchor="middle">You</text>
+  <text x="107" y="163" font-size="12" fill="#66625a" text-anchor="middle">describe the idea</text>
+
+  <!-- Manager -->
+  <rect x="232" y="110" width="170" height="74" rx="10" fill="#ffffff" stroke="#e0ddd5"/>
+  <text x="317" y="138" font-size="15" font-weight="700" fill="#1c1b19" text-anchor="middle">Manager agent</text>
+  <text x="317" y="157" font-size="12" fill="#66625a" text-anchor="middle">Codex, Claude, Copilot,</text>
+  <text x="317" y="173" font-size="12" fill="#66625a" text-anchor="middle">Antigravity, Gemini…</text>
+
+  <!-- Spec -->
+  <rect x="452" y="118" width="110" height="58" rx="8" fill="#ecebe6" stroke="#e0ddd5"/>
+  <text x="507" y="144" font-size="13" font-weight="600" fill="#1c1b19" text-anchor="middle" font-family="Consolas, monospace">spec.json</text>
+  <text x="507" y="162" font-size="11.5" fill="#66625a" text-anchor="middle">steps + checks</text>
+
+  <!-- Orchestrator -->
+  <rect x="612" y="96" width="316" height="102" rx="12" fill="#23716b"/>
+  <text x="770" y="128" font-size="16" font-weight="700" fill="#ffffff" text-anchor="middle">Orchestrator</text>
+  <text x="770" y="150" font-size="12.5" fill="#d9ece9" text-anchor="middle">SQLite state · git branch per workflow</text>
+  <text x="770" y="168" font-size="12.5" fill="#d9ece9" text-anchor="middle">scope check · verify commands · retries</text>
+  <text x="770" y="186" font-size="12.5" fill="#d9ece9" text-anchor="middle">usage guards · battery and sleep</text>
+
+  <line x1="182" y1="147" x2="230" y2="147" stroke="#8a857b" stroke-width="1.6" marker-end="url(#a)"/>
+  <line x1="402" y1="147" x2="450" y2="147" stroke="#8a857b" stroke-width="1.6" marker-end="url(#a)"/>
+  <line x1="562" y1="147" x2="610" y2="147" stroke="#8a857b" stroke-width="1.6" marker-end="url(#a)"/>
+  <text x="317" y="210" font-size="11.5" fill="#8a857b" text-anchor="middle">plans with you, shows the plan,</text>
+  <text x="317" y="225" font-size="11.5" fill="#8a857b" text-anchor="middle">starts it after you agree</text>
+
+  <!-- Agents -->
+  <rect x="612" y="250" width="96" height="70" rx="10" fill="#ffffff" stroke="#c8643f" stroke-width="1.5"/>
+  <text x="660" y="278" font-size="13" font-weight="700" fill="#1c1b19" text-anchor="middle">Backend</text>
+  <text x="660" y="297" font-size="11" fill="#66625a" text-anchor="middle">API contract,</text>
+  <text x="660" y="311" font-size="11" fill="#66625a" text-anchor="middle">server, tests</text>
+
+  <rect x="722" y="250" width="96" height="70" rx="10" fill="#ffffff" stroke="#3f72d8" stroke-width="1.5"/>
+  <text x="770" y="278" font-size="13" font-weight="700" fill="#1c1b19" text-anchor="middle">Frontend</text>
+  <text x="770" y="297" font-size="11" fill="#66625a" text-anchor="middle">UI from the</text>
+  <text x="770" y="311" font-size="11" fill="#66625a" text-anchor="middle">contract</text>
+
+  <rect x="832" y="250" width="96" height="70" rx="10" fill="#ffffff" stroke="#7a52c7" stroke-width="1.5"/>
+  <text x="880" y="278" font-size="13" font-weight="700" fill="#1c1b19" text-anchor="middle">Reviewer</text>
+  <text x="880" y="297" font-size="11" fill="#66625a" text-anchor="middle">checks both,</text>
+  <text x="880" y="311" font-size="11" fill="#66625a" text-anchor="middle">sends fixes</text>
+
+  <line x1="660" y1="198" x2="660" y2="248" stroke="#8a857b" stroke-width="1.6" marker-end="url(#a)"/>
+  <line x1="770" y1="198" x2="770" y2="248" stroke="#8a857b" stroke-width="1.6" marker-end="url(#a)"/>
+  <line x1="880" y1="198" x2="880" y2="248" stroke="#8a857b" stroke-width="1.6" marker-end="url(#a)"/>
+  <path d="M880 320 C880 352 770 352 770 322" fill="none" stroke="#7a52c7" stroke-width="1.4" stroke-dasharray="4 3" marker-end="url(#a)"/>
+  <text x="826" y="362" font-size="11" fill="#7a52c7" text-anchor="middle">fix requests</text>
+
+  <!-- Watching and alerts -->
+  <rect x="32" y="262" width="250" height="122" rx="10" fill="#ffffff" stroke="#e0ddd5"/>
+  <text x="50" y="290" font-size="14" font-weight="700" fill="#1c1b19">Watch it live</text>
+  <text x="50" y="312" font-size="12" fill="#66625a">• terminal window, opens by itself</text>
+  <text x="50" y="331" font-size="12" fill="#66625a">• side panel in Antigravity / VS Code</text>
+  <text x="50" y="350" font-size="12" fill="#66625a">• time, tokens, Claude plan left</text>
+
+  <rect x="312" y="262" width="250" height="122" rx="10" fill="#ffffff" stroke="#e0ddd5"/>
+  <text x="330" y="290" font-size="14" font-weight="700" fill="#1c1b19">Alerts on your phone</text>
+  <text x="330" y="312" font-size="12" fill="#66625a">• work complete · question for you</text>
+  <text x="330" y="331" font-size="12" fill="#66625a">• limit reached · budget · battery</text>
+  <text x="330" y="350" font-size="12" fill="#66625a">• ntfy, Telegram, WhatsApp, email</text>
+
+  <path d="M612 300 C590 300 590 323 564 323" fill="none" stroke="#8a857b" stroke-width="1.4" marker-end="url(#a)"/>
+  <path d="M312 330 L284 330" fill="none" stroke="#8a857b" stroke-width="1.4" stroke-dasharray="4 3"/>
+</svg>

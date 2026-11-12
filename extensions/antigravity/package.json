@@ -1,0 +1,34 @@
+{
+  "name": "agent-bridge-antigravity",
+  "displayName": "TandemBridge (Antigravity)",
+  "description": "Shows what a TandemBridge step is doing, live, in a side panel of the project window.",
+  "publisher": "local",
+  "version": "0.8.0",
+  "engines": {
+    "vscode": "^1.74.0"
+  },
+  "main": "./extension.js",
+  "activationEvents": [
+    "onStartupFinished"
+  ],
+  "contributes": {
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "tandembridge",
+          "title": "TandemBridge",
+          "icon": "media/icon.svg"
+        }
+      ]
+    },
+    "views": {
+      "tandembridge": [
+        {
+          "type": "webview",
+          "id": "tandembridge.live",
+          "name": "Live step"
+        }
+      ]
+    }
+  }
+}

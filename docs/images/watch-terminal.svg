@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="430" viewBox="0 0 960 430" font-family="Cascadia Mono, Consolas, SF Mono, Menlo, monospace" font-size="13.5">
+  <rect width="960" height="430" rx="12" fill="#161614"/>
+  <rect width="960" height="34" rx="12" fill="#22211f"/>
+  <rect y="22" width="960" height="12" fill="#22211f"/>
+  <circle cx="22" cy="17" r="5.5" fill="#ef6b5f"/><circle cx="40" cy="17" r="5.5" fill="#e6b450"/><circle cx="58" cy="17" r="5.5" fill="#6cc070"/>
+  <text x="480" y="22" fill="#8f8a80" text-anchor="middle" font-family="Segoe UI, system-ui, sans-serif" font-size="12.5">TandemBridge · npm run bridge -- watch</text>
+
+  <text x="24" y="66" fill="#7a756c">────────────────────────────────────────────────────────────</text>
+  <text x="24" y="88" fill="#ece8e0" font-weight="700">Build the login page <tspan fill="#7aa2f0" font-weight="400">Antigravity</tspan><tspan fill="#7a756c" font-weight="400"> · gemini-3.8-flash-high</tspan></text>
+  <text x="24" y="108" fill="#7a756c">D:\projects\expense-tracker</text>
+
+  <text x="24" y="140" fill="#7aa2f0" font-weight="700">● Antigravity</text>
+  <text x="24" y="160" fill="#ece8e0">  I'll read the API contract first, then build the form.</text>
+  <text x="24" y="184" fill="#7a756c">  Read     <tspan fill="#ece8e0">docs/API_CONTRACT.md</tspan></text>
+  <text x="24" y="204" fill="#7a756c">  Read     <tspan fill="#ece8e0">docs/design-reference/DESIGN.md</tspan></text>
+  <text x="24" y="224" fill="#7a756c">  Wrote    <tspan fill="#5fc4d6">frontend/src/pages/LoginPage.tsx</tspan></text>
+  <text x="24" y="244" fill="#7a756c">  Wrote    <tspan fill="#5fc4d6">frontend/src/api/auth.ts</tspan></text>
+  <text x="24" y="264" fill="#7a756c">  Ran      <tspan fill="#ece8e0">npm --prefix frontend run typecheck</tspan></text>
+  <text x="24" y="284" fill="#ef8b80">  Ran failed: LoginPage.tsx(14,7): Property "email" is missing</text>
+  <text x="24" y="304" fill="#7a756c">  Edited   <tspan fill="#5fc4d6">frontend/src/pages/LoginPage.tsx</tspan></text>
+
+  <text x="24" y="336" fill="#7aa2f0" font-weight="700">● Antigravity</text>
+  <text x="24" y="356" fill="#ece8e0">  Typecheck passes. The page posts to /api/auth/login and stores the token.</text>
+
+  <rect x="0" y="384" width="960" height="1" fill="#2b2a27"/>
+  <text x="24" y="412"><tspan fill="#5fc4d6">⠹</tspan><tspan fill="#ece8e0"> Antigravity working</tspan><tspan fill="#7a756c"> · </tspan><tspan fill="#ece8e0">2m 13s</tspan><tspan fill="#7a756c"> · </tspan><tspan fill="#ece8e0">45.2k tokens</tspan><tspan fill="#7a756c"> · </tspan><tspan fill="#ece8e0">Claude 5h </tspan><tspan fill="#6cc070">62% left</tspan><tspan fill="#7a756c"> (resets 3:40 PM)</tspan><tspan fill="#ece8e0"> week </tspan><tspan fill="#6cc070">84% left</tspan></text>
+</svg>

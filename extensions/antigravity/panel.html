@@ -1,0 +1,186 @@
+<!doctype html>
+<html><head><meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'nonce-{{nonce}}'; script-src 'nonce-{{nonce}}';">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style nonce="{{nonce}}">
+  :root { --claude: #d0805a; --antigravity: #6f9cf0; --ok: var(--vscode-testing-iconPassed, #73c991); }
+  body { margin: 0; padding: 0 12px 64px; font: var(--vscode-font-size) var(--vscode-font-family); color: var(--vscode-foreground); background: var(--vscode-sideBar-background); }
+  header { position: sticky; top: 0; z-index: 1; padding: 10px 0 9px; background: var(--vscode-sideBar-background); border-bottom: 1px solid var(--vscode-panel-border); }
+  h1 { margin: 0; font-size: 1.05em; font-weight: 600; line-height: 1.35; }
+  .by { margin-top: 3px; font-size: .85em; color: var(--vscode-descriptionForeground); }
+  .by b { font-weight: 600; color: var(--vscode-foreground); }
+  .limits { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 8px; }
+  .lim { display: flex; align-items: center; gap: 6px; font-size: .8em; padding: 2px 8px 2px 3px; border-radius: 999px; background: var(--vscode-editorWidget-background); border: 1px solid var(--vscode-panel-border); }
+  .lim svg { display: block; }
+  .lim .t { stroke: var(--vscode-panel-border); }
+  .lim .f { stroke: var(--ok); }
+  .lim.low .f { stroke: var(--vscode-editorWarning-foreground); }
+  .lim.out .f { stroke: var(--vscode-errorForeground); }
+  .lim span { color: var(--vscode-descriptionForeground); }
+  .empty { margin-top: 28px; color: var(--vscode-descriptionForeground); }
+  .msg { display: grid; grid-template-columns: 22px 1fr; gap: 8px; margin: 14px 0; }
+  .av { width: 22px; height: 22px; border-radius: 6px; display: grid; place-items: center; font-size: 11px; font-weight: 700; color: #fff; background: var(--vscode-button-background); }
+  .av.claude { background: var(--claude); }
+  .av.antigravity { background: var(--antigravity); }
+  .bubble { white-space: pre-wrap; overflow-wrap: anywhere; line-height: 1.55; }
+  details { margin: 6px 0 6px 30px; border: 1px solid var(--vscode-panel-border); border-radius: 6px; }
+  summary { list-style: none; cursor: pointer; display: flex; gap: 6px; align-items: center; padding: 5px 9px; font-size: .88em; color: var(--vscode-descriptionForeground); }
+  summary::-webkit-details-marker { display: none; }
+  summary::before { content: '\203A'; transition: transform .15s; }
+  details[open] summary::before { transform: rotate(90deg); }
+  .bad { color: var(--vscode-errorForeground); }
+  ul { list-style: none; margin: 0; padding: 3px 9px 8px; border-top: 1px solid var(--vscode-panel-border); }
+  li { display: grid; grid-template-columns: 58px 1fr; gap: 8px; padding: 1px 0; font-size: .88em; }
+  li .v { color: var(--vscode-descriptionForeground); }
+  li .w { font-family: var(--vscode-editor-font-family); overflow-wrap: anywhere; }
+  li.write .w { color: var(--vscode-textLink-foreground); }
+  li.error .v, li.error .w { color: var(--vscode-errorForeground); }
+  .note { margin: 6px 0 6px 30px; font-size: .85em; color: var(--vscode-descriptionForeground); }
+  .done { margin: 14px 0 0 30px; font-size: .9em; }
+  .done b { color: var(--ok); }
+  .done b.no { color: var(--vscode-errorForeground); }
+  .done span { color: var(--vscode-descriptionForeground); }
+  .new { animation: rise .3s ease both; }
+  .live { position: fixed; left: 12px; right: 12px; bottom: 10px; display: flex; gap: 6px; align-items: center; padding: 7px 12px; border-radius: 999px; font-size: .9em;
+    background: var(--vscode-editorWidget-background); border: 1px solid var(--vscode-panel-border); box-shadow: 0 4px 16px rgb(0 0 0 / .25); }
+  .live[hidden] { display: none; }
+  .live b { font-variant-numeric: tabular-nums; }
+  .dots { display: inline-flex; gap: 3px; margin-right: 2px; }
+  .dots i { width: 5px; height: 5px; border-radius: 50%; background: var(--vscode-progressBar-background); animation: hop 1.2s ease-in-out infinite; }
+  .dots i:nth-child(2) { animation-delay: .15s; }
+  .dots i:nth-child(3) { animation-delay: .3s; }
+  @keyframes hop { 0%, 60%, 100% { transform: none; opacity: .5; } 30% { transform: translateY(-4px); opacity: 1; } }
+  @keyframes rise { from { opacity: 0; transform: translateY(5px); } }
+  @media (prefers-reduced-motion: reduce) { * { animation: none !important; } }
+</style></head>
+<body>
+<header><h1 id="title">TandemBridge</h1><div class="by" id="by"></div><div class="limits" id="limits"></div></header>
+<main id="feed"><p class="empty">No step is running for this project.</p></main>
+<div class="live" id="live" hidden></div>
+<script nonce="{{nonce}}">
+  const $ = (id) => document.getElementById(id);
+  const el = (tag, cls, text) => { const e = document.createElement(tag); if (cls) e.className = cls; if (text) e.textContent = text; return e; };
+  const NS = 'http://www.w3.org/2000/svg';
+  const fmtSecs = (s) => { s = Math.max(0, Math.round(s)); const m = Math.floor(s / 60), h = Math.floor(m / 60); return h ? h + 'h ' + (m % 60) + 'm' : m ? m + 'm ' + String(s % 60).padStart(2, '0') + 's' : s + 's'; };
+  const fmtTok = (n) => n >= 1e6 ? (n / 1e6).toFixed(1) + 'M' : n >= 1e3 ? (n / 1e3).toFixed(1) + 'k' : String(n);
+  const time = (ms) => new Date(ms).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+  const opened = new Set();
+  let last = null;
+  let shown = 0;
+
+  function ring(left) {
+    const c = 2 * Math.PI * 6, s = document.createElementNS(NS, 'svg');
+    s.setAttribute('width', 16); s.setAttribute('height', 16); s.setAttribute('viewBox', '0 0 16 16');
+    for (const [cls, off] of [['t', 0], ['f', c * (1 - left / 100)]]) {
+      const k = document.createElementNS(NS, 'circle');
+      const attrs = { class: cls, cx: 8, cy: 8, r: 6, fill: 'none', 'stroke-width': 2.5, 'stroke-dasharray': c, 'stroke-dashoffset': off, 'stroke-linecap': 'round', transform: 'rotate(-90 8 8)' };
+      for (const a in attrs) k.setAttribute(a, attrs[a]);
+      s.append(k);
+    }
+    return s;
+  }
+
+  function drawLimits(l) {
+    const box = $('limits');
+    box.replaceChildren();
+    if (!l) return;
+    for (const [name, w] of [['5h', l.fiveHour], ['week', l.week]]) {
+      if (!w) continue;
+      const reset = w.resetsAt <= Date.now();
+      const left = reset ? 100 : Math.round((1 - w.used) * 100);
+      const b = el('div', 'lim' + (left <= 10 ? ' out' : left <= 30 ? ' low' : ''));
+      b.append(ring(left), el('b', null, left + '% left'), el('span', null, 'Claude ' + name + (reset ? '' : ' · resets ' + time(w.resetsAt))));
+      b.title = (100 - left) + '% used';
+      box.append(b);
+    }
+  }
+
+  // Consecutive tool calls fold into one line; the agent's words stay in full.
+  function groups(items) {
+    const out = [];
+    for (const i of items) {
+      const tool = i.kind === 'tool' || i.kind === 'error';
+      const g = out[out.length - 1];
+      if (tool && g && g.kind === 'acts') g.items.push(i);
+      else out.push(tool ? { kind: 'acts', items: [i] } : i);
+    }
+    return out;
+  }
+
+  function draw(d) {
+    const agentKey = /claude/i.test(d.agent) ? 'claude' : /antigravity/i.test(d.agent) ? 'antigravity' : '';
+    $('title').textContent = d.title || 'TandemBridge';
+    const by = $('by');
+    by.replaceChildren();
+    if (d.agent) { by.append(el('b', null, d.agent)); if (d.model) by.append(' · ' + d.model); }
+    drawLimits(d.limits);
+    const feed = $('feed');
+    if (!d.items.length) { feed.replaceChildren(el('p', 'empty', d.title ? 'Starting...' : 'No step is running for this project.')); shown = 0; return; }
+    const nodes = [];
+    let prevMsg = false;
+    groups(d.items).forEach((g, gi) => {
+      if (g.kind === 'agent') {
+        const m = el('div', 'msg');
+        const av = el('div', 'av ' + agentKey, (d.agent || 'A')[0]);
+        if (prevMsg) av.style.visibility = 'hidden';
+        m.append(av, el('div', 'bubble', g.text));
+        nodes.push(m);
+        prevMsg = true;
+        return;
+      }
+      prevMsg = false;
+      if (g.kind === 'acts') {
+        const det = el('details');
+        det.open = opened.has(gi);
+        det.addEventListener('toggle', () => { if (det.open) opened.add(gi); else opened.delete(gi); });
+        const files = new Set(g.items.filter((i) => i.tool === 'write').map((i) => i.text)).size;
+        const reads = g.items.filter((i) => i.tool === 'read' || i.tool === 'search').length;
+        const runs = g.items.filter((i) => i.tool === 'run').length;
+        const errs = g.items.filter((i) => i.kind === 'error').length;
+        const words = [files && files + ' file' + (files > 1 ? 's' : '') + ' changed', reads && reads + ' read', runs && runs + ' command' + (runs > 1 ? 's' : '')].filter(Boolean);
+        const sum = el('summary', null, words.join(' · ') || g.items.length + ' actions');
+        if (errs) sum.append(el('span', 'bad', errs + ' failed'));
+        const ul = el('ul');
+        for (const i of g.items) {
+          const li = el('li', i.kind === 'error' ? 'error' : i.tool);
+          li.append(el('span', 'v', i.label), el('span', 'w', i.text));
+          ul.append(li);
+        }
+        det.append(sum, ul);
+        nodes.push(det);
+      } else if (g.kind === 'done') {
+        const ok = /^success/i.test(g.text);
+        const r = el('div', 'done');
+        r.append(el('b', ok ? '' : 'no', ok ? '✓ Finished' : '✗ Stopped'), el('span', null, '  ' + g.text.split(', ').slice(1).join(' · ')));
+        nodes.push(r);
+      } else nodes.push(el('div', 'note', g.text));
+    });
+    nodes.slice(shown).forEach((n) => n.classList.add('new'));
+    shown = nodes.length;
+    const atBottom = window.innerHeight + window.scrollY >= document.body.scrollHeight - 60;
+    feed.replaceChildren(...nodes);
+    if (atBottom) window.scrollTo(0, document.body.scrollHeight);
+  }
+
+  // The line at the bottom while the step runs, like a chat's "typing".
+  function liveLine() {
+    const box = $('live');
+    if (!last || last.ended || !last.title) { box.hidden = true; return; }
+    const dots = el('span', 'dots');
+    dots.append(el('i'), el('i'), el('i'));
+    const parts = [dots, (last.agent || 'Agent') + ' working'];
+    if (last.started) parts.push(' · ', el('b', null, fmtSecs((Date.now() - last.started) / 1000)));
+    if (last.tokens) parts.push(' · ', el('b', null, fmtTok(last.tokens) + ' tokens'));
+    box.replaceChildren(...parts);
+    box.hidden = false;
+  }
+
+  window.addEventListener('message', ({ data }) => {
+    if (last && data.title !== last.title) { opened.clear(); shown = 0; }
+    last = data;
+    draw(data);
+    liveLine();
+  });
+  setInterval(liveLine, 1000);
+</script>
+</body></html>

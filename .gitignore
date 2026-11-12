@@ -1,0 +1,25 @@
+# Dependencies
+node_modules/
+
+# Secrets and owner choices, written by /setup
+.env
+bridge.profile.json
+/AGENTS.md
+/CLAUDE.md
+/GEMINI.md
+/.github/copilot-instructions.md
+.claude/settings.local.json
+
+# Runtime state
+data/*
+!data/.gitkeep
+*.db
+*.db-wal
+*.db-shm
+*.log
+*.pid
+backups/
+
+# Owner's private files
+agent_roles.md
+references/custom/

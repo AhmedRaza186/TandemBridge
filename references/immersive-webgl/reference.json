@@ -1,0 +1,5 @@
+{
+  "title": "Immersive WebGL",
+  "suited_for": ["award-style showcase", "3D product reveal", "creative agency", "game or film promo", "car, gadget, or sneaker launch", "interactive story"],
+  "summary": "A real-time 3D scene is the page. Scroll drives the camera through chapters, text floats over the canvas, and strict performance budgets and fallbacks keep it usable everywhere."
+}
