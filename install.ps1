@@ -55,14 +55,69 @@ function Install-TandemBridge {
     return $false
   }
 
-  # The folder chooser of Windows. Returns $null if it cannot open or nothing was picked.
+  # A menu picked with the arrow keys and Enter (or a number key). Esc returns -1.
+  # Where keys cannot be read (input piped in), it falls back to typing a number.
+  function Select-Menu($items, $default = 0) {
+    $interactive = $true
+    try { if ([Console]::IsInputRedirected) { $interactive = $false } } catch { $interactive = $false }
+    if (-not $interactive) {
+      for ($n = 0; $n -lt $items.Count; $n++) { Say ("  {0}. {1}" -f ($n + 1), $items[$n]) }
+      $answer = (Read-Host "Your choice [$($default + 1)]").Trim()
+      if ($answer -eq '') { return $default }
+      if ($answer -match '^\d+$' -and [int]$answer -ge 1 -and [int]$answer -le $items.Count) { return [int]$answer - 1 }
+      return -1
+    }
+    Say '  (arrow keys to move, Enter to choose, Esc to skip)' DarkGray
+    $width = [Math]::Max(20, [Console]::WindowWidth - 1)
+    foreach ($item in $items) { Write-Host '' }
+    $top = [Console]::CursorTop - $items.Count
+    $i = $default
+    $cursor = [Console]::CursorVisible
+    [Console]::CursorVisible = $false
+    try {
+      while ($true) {
+        for ($n = 0; $n -lt $items.Count; $n++) {
+          [Console]::SetCursorPosition(0, $top + $n)
+          $line = if ($n -eq $i) { "  > $($items[$n])" } else { "    $($items[$n])" }
+          if ($line.Length -gt $width) { $line = $line.Substring(0, $width) }
+          if ($n -eq $i) { Write-Host $line.PadRight($width) -ForegroundColor Cyan -NoNewline }
+          else { Write-Host $line.PadRight($width) -ForegroundColor Gray -NoNewline }
+        }
+        $key = [Console]::ReadKey($true)
+        switch ($key.Key) {
+          'UpArrow' { $i = ($i - 1 + $items.Count) % $items.Count }
+          'DownArrow' { $i = ($i + 1) % $items.Count }
+          'Home' { $i = 0 }
+          'End' { $i = $items.Count - 1 }
+          'Enter' { return $i }
+          'Escape' { return -1 }
+          default {
+            $c = [string]$key.KeyChar
+            if ($c -match '^[1-9]$' -and [int]$c -le $items.Count) { $i = [int]$c - 1 }
+          }
+        }
+      }
+    } finally {
+      [Console]::SetCursorPosition(0, $top + $items.Count)
+      [Console]::CursorVisible = $cursor
+      Write-Host ''
+    }
+  }
+
+  # The folder chooser of Windows, kept on top of the terminal. $null if nothing was picked.
   function Browse-Folder {
     try {
       Add-Type -AssemblyName System.Windows.Forms
+      $owner = New-Object System.Windows.Forms.Form
+      $owner.TopMost = $true
+      $owner.ShowInTaskbar = $false
       $dialog = New-Object System.Windows.Forms.FolderBrowserDialog
       $dialog.Description = 'Choose where to put the TandemBridge folder'
       $dialog.ShowNewFolderButton = $true
-      if ($dialog.ShowDialog() -eq [System.Windows.Forms.DialogResult]::OK) { return $dialog.SelectedPath }
+      Say 'A folder window has opened. Choose a folder there.' DarkGray
+      $result = $dialog.ShowDialog($owner)
+      $owner.Dispose()
+      if ($result -eq [System.Windows.Forms.DialogResult]::OK) { return $dialog.SelectedPath }
     } catch { Say 'The folder window could not open here. Type the path instead.' Yellow }
     return $null
   }
@@ -74,26 +129,26 @@ function Install-TandemBridge {
     $default = Join-Path $env:USERPROFILE 'TandemBridge'
     if ($env:TANDEMBRIDGE_YES -eq '1') { return $default }
 
-    $choices = @($default)
+    $paths = @($default)
     $drives = Get-CimInstance Win32_LogicalDisk -Filter 'DriveType=3' -ErrorAction SilentlyContinue
     foreach ($d in $drives) {
-      if ($d.DeviceID -ne $env:SystemDrive) { $choices += "$($d.DeviceID)\TandemBridge" }
+      if ($d.DeviceID -ne $env:SystemDrive) { $paths += "$($d.DeviceID)\TandemBridge" }
     }
-    Step 'Where should TandemBridge go?'
-    for ($i = 0; $i -lt $choices.Count; $i++) {
-      $drive = $choices[$i].Substring(0, 2)
-      $disk = $drives | Where-Object { $_.DeviceID -eq $drive }
-      $free = if ($disk) { '{0:N0} GB free' -f ($disk.FreeSpace / 1GB) } else { '' }
-      $tag = if ($i -eq 0) { ' (default)' } else { '' }
-      Say ("  {0}. {1}{2}   {3}" -f ($i + 1), $choices[$i], $tag, $free)
+    $items = @()
+    for ($n = 0; $n -lt $paths.Count; $n++) {
+      $disk = $drives | Where-Object { $_.DeviceID -eq $paths[$n].Substring(0, 2) }
+      $free = if ($disk) { '   {0:N0} GB free' -f ($disk.FreeSpace / 1GB) } else { '' }
+      $items += "$($paths[$n])$free"
     }
-    Say '  B. Browse for a folder...'
-    Say '  Or type a full path, for example D:\Tools\TandemBridge'
+    $items += 'Browse for a folder...'
+    $items += 'Type a path...'
+
     while ($true) {
-      $answer = (Read-Host 'Your choice [1]').Trim().Trim('"')
-      if ($answer -eq '') { return $default }
-      if ($answer -match '^\d+$' -and [int]$answer -ge 1 -and [int]$answer -le $choices.Count) { return $choices[[int]$answer - 1] }
-      if ($answer -match '^[bB]$') {
+      Step 'Where should TandemBridge go?'
+      $pick = Select-Menu $items 0
+      if ($pick -lt 0) { return $default }
+      if ($pick -lt $paths.Count) { return $paths[$pick] }
+      if ($pick -eq $paths.Count) {
         $picked = Browse-Folder
         if ($picked) {
           # A folder that already holds other things gets a TandemBridge folder inside it.
@@ -103,8 +158,9 @@ function Install-TandemBridge {
         }
         continue
       }
-      if ($answer -match '^[a-zA-Z]:\\') { return $answer }
-      Say 'Type a number, B, or a full path like D:\TandemBridge.' Yellow
+      $typed = (Read-Host 'Full path, for example D:\Tools\TandemBridge').Trim().Trim('"')
+      if ($typed -match '^[a-zA-Z]:\\') { return $typed }
+      Say 'That is not a full path like D:\TandemBridge.' Yellow
     }
   }
 
@@ -146,11 +202,10 @@ function Install-TandemBridge {
     if (-not $options.Count) { return }
 
     Step 'Open it now to start setup?'
-    for ($i = 0; $i -lt $options.Count; $i++) { Say ("  {0}. {1}" -f ($i + 1), $options[$i].Name) }
-    Say '  Enter. Not now'
-    $answer = (Read-Host 'Your choice').Trim()
-    if ($answer -notmatch '^\d+$' -or [int]$answer -lt 1 -or [int]$answer -gt $options.Count) { return }
-    $o = $options[[int]$answer - 1]
+    $items = @($options | ForEach-Object { $_.Name }) + 'Not now'
+    $pick = Select-Menu $items 0
+    if ($pick -lt 0 -or $pick -ge $options.Count) { return }
+    $o = $options[$pick]
     if ($o.Kind -eq 'ide') {
       Start-Process -FilePath $o.Bin -ArgumentList "`"$folder`"" -WindowStyle Hidden
       Say "Opened in $($o.Name). In its agent chat, type: $prompt" Green
