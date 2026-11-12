@@ -3,7 +3,7 @@
   "displayName": "TandemBridge (Antigravity)",
   "description": "Shows what a TandemBridge step is doing, live, in a side panel of the project window.",
   "publisher": "local",
-  "version": "0.8.0",
+  "version": "0.8.1",
   "engines": {
     "vscode": "^1.74.0"
   },
