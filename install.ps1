@@ -63,12 +63,15 @@ function Install-TandemBridge {
     try { if ([Console]::IsInputRedirected) { $interactive = $false } } catch { $interactive = $false }
     if (-not $interactive) {
       for ($n = 0; $n -lt $items.Count; $n++) { Say ("  {0}. {1}" -f ($n + 1), $items[$n]) }
-      $answer = (Read-Host "Your choice [$($default + 1)]").Trim()
-      if ($answer -eq '') { return $default }
-      if ($answer -match '^\d+$' -and [int]$answer -ge 1 -and [int]$answer -le $items.Count) { return [int]$answer - 1 }
-      return -1
+      while ($true) {
+        $answer = (Read-Host "Your choice [$($default + 1)], or q to go back").Trim()
+        if ($answer -eq '') { return $default }
+        if ($answer -match '^[qQ]$') { return -1 }
+        if ($answer -match '^\d+$' -and [int]$answer -ge 1 -and [int]$answer -le $items.Count) { return [int]$answer - 1 }
+        Say "Type a number from 1 to $($items.Count)." Yellow
+      }
     }
-    Say '  (arrow keys to move, Enter to choose, Esc to skip)' DarkGray
+    Say '  (arrow keys to move, Enter to choose, Esc to go back)' DarkGray
     $width = [Math]::Max(20, [Console]::WindowWidth - 1)
     foreach ($item in $items) { Write-Host '' }
     $top = [Console]::CursorTop - $items.Count
@@ -193,7 +196,7 @@ function Install-TandemBridge {
     while ($true) {
       Step 'Where should TandemBridge go?'
       $pick = Select-Menu $items 0
-      if ($pick -lt 0) { return $default }
+      if ($pick -lt 0) { return $null }             # Esc: stop, install nothing
       if ($pick -lt $paths.Count) { return $paths[$pick] }
       if ($pick -eq $paths.Count -or $pick -eq $paths.Count + 1) {
         $picked = if ($pick -eq $paths.Count) { Browse-Window } else { Browse-Folder }
@@ -271,6 +274,7 @@ function Install-TandemBridge {
 
   $given = [bool]$env:TANDEMBRIDGE_HOME
   $home_ = Choose-Home
+  if (-not $home_) { Say ''; Say 'Cancelled. Nothing was installed.' Yellow; return }
   if (-not (Test-Path (Split-Path $home_ -Qualifier))) { Say "Drive $(Split-Path $home_ -Qualifier) does not exist." Red; return }
   # A folder chosen here is remembered for this user, so the next run updates the same folder.
   if (-not $given) { [Environment]::SetEnvironmentVariable('TANDEMBRIDGE_HOME', $home_, 'User') }
